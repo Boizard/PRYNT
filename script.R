@@ -46,7 +46,7 @@ random_walk_ranking_function<-function(graph,seed,adjacency_matrix=NULL,multiple
   # using the RandomWalkRestartMH package
   #graph : igraph object, containing the network to analyse
   #seed : character vector of DE proteins
-
+  
   #adjacency_matrix : to have the possibility to calculate the adjency matrix outside of the function
   #multiplex_object : to have the possibility to calculate the multiplex object outside of the function
   
@@ -96,7 +96,7 @@ precision_plot_single<-function(precision,sequence,col){
   AUC <- sum(diff(x)*rollmean(y,2))
   x<-sequence
   plot(x,y*100,pch=19,xlim = c(sequence[1],sequence[length(sequence)]),ylim=c(0,100),col=col,
-       xlab = "Nombre de protéines",ylab="% de proteines adpkd")
+       xlab = "Nombre de protÃ©ines",ylab="% de proteines adpkd")
   cord.x <- c(sequence[1],x,sequence[length(sequence)])
   cord.y <- c(0,y,0)
   rgb_color<-col2rgb(col)
@@ -135,7 +135,7 @@ precision_plot<-function(list_binary_results,step=5,size_top=100,legend=T,
     else{
       if(j==sequence[1]){
         plot(seq(step,size_top,step),y*100,pch=19,xlim = c(step,size_top),ylim=c(0,100),col=color[j],
-             xlab = "Nombre de protéines",ylab="% de proteines adpkd",type="l")
+             xlab = "Nombre de protÃ©ines",ylab="% de proteines adpkd",type="l")
       }
       else  {
         lines(seq(step,size_top,step),y*100,type="l",pch=19,col=color[j])
@@ -206,10 +206,11 @@ network<-network_actions_directed_acting_900
 ####experimental data####
 
 #list_DE_bakun2012 character vector of Differently Expressed proteins (DE) from Bankun et al. (2012) concerning ADPKD  available on github
-#adress : 
-
-experimental_data<-read.table(file = "list_DE_bakun2012.csv",stringsAsFactors = F,sep = '\t',header = T)
-
+#adress : https://github.com/Boizard/Prioritization_urinary_proteome/
+#this list can be replace by your own dataset
+DE_proteins<-read.table(file = "list_DE_bakun2012.csv",
+                                     stringsAsFactors = F,sep = '\t',header = F)
+DE_proteins<-DE_proteins[,1]
 
 
 
@@ -340,15 +341,15 @@ head(results_D)
 
 
 
-results<-merge(results_SP,results_RW,by = "node")
-results<-merge(results,results_D,by = "node")
-results<-merge(clustered_protein,results,by = "node",all.y =T )
+results_PPI<-merge(results_SP,results_RW,by = "node")
+results_PPI<-merge(results_PPI,results_D,by = "node")
+results_PPI<-merge(clustered_protein,results_PPI,by = "node",all.y =T )
 
 #Combined scores
-D_SP<-results$rank_D*results$rank_SP
-D_RW<-results$rank_D*results$rank_RW
-SP_RW<-results$rank_SP*results$rank_RW
-results<-data.frame(results,D_SP,D_RW,SP_RW)
+D_SP<-results_PPI$rank_D*results_PPI$rank_SP
+D_RW<-results_PPI$rank_D*results_PPI$rank_RW
+SP_RW<-results_PPI$rank_SP*results_PPI$rank_RW
+results_PPI<-data.frame(results_PPI,D_SP,D_RW,SP_RW)
 
 
 ####Calculation of priorisation measure in the network with clique####
@@ -397,7 +398,7 @@ for( i in 1:nrow(results_D_clique)){
   else{select_node[i]<-as.character(results_D_clique$node[i])}
 }
 results_D_clique<-cbind(select_node,results_D_clique)
-colnames(results_D_clique)[colnames(results_D_clique)== "node"]<-"node_clique_SP"
+results_D_clique<-results_D_clique[,-which(colnames(results_D_clique)== "node")]
 
 
 ###SP
@@ -408,14 +409,14 @@ for( i in 1:nrow(results_SP_clique)){
     
     proteins_clique<-clustered_protein[clustered_protein$clique_bigger==substr(x = node,7,1000),"node"]
     results_proteins_clique<-results_SP[results_SP$node%in%proteins_clique,]
-
+    
     select_node[i]<-as.character(results_proteins_clique$node[which.max(results_proteins_clique$SP)[1]])
     
   }
   else{select_node[i]<-as.character(results_SP_clique$node[i])}
 }
 results_SP_clique<-cbind(select_node,results_SP_clique)
-colnames(results_SP_clique)[colnames(results_SP_clique)== "node"]<-"node_clique_SP"
+results_SP_clique<-results_SP_clique[,-which(colnames(results_SP_clique)== "node")]
 
 ###RW
 select_node<-rep('',nrow(results_RW_clique))
@@ -432,7 +433,7 @@ for( i in 1:nrow(results_RW_clique)){
   else{select_node[i]<-as.character(results_RW_clique$node[i])}
 }
 results_RW_clique<-cbind(select_node,results_RW_clique)
-colnames(results_RW_clique)[colnames(results_RW_clique)== "node"]<-"node_clique_SP"
+results_RW_clique<-results_RW_clique[,-which(colnames(results_RW_clique)== "node")]
 
 ###D_SP
 select_node<-rep('',nrow(results_D_SP_clique))
@@ -441,7 +442,7 @@ for( i in 1:nrow(results_D_SP_clique)){
   if(substr(x =node,1,6)=="clique"){
     
     proteins_clique<-clustered_protein[clustered_protein$clique_bigger==substr(x = node,7,1000),"node"]
-    results_proteins_clique<-results[results$node%in%proteins_clique,]
+    results_proteins_clique<-results_PPI[results_PPI$node%in%proteins_clique,]
     
     select_node[i]<-as.character(results_proteins_clique$node[which.min(results_proteins_clique$D_SP)[1]])
     
@@ -449,7 +450,7 @@ for( i in 1:nrow(results_D_SP_clique)){
   else{select_node[i]<-as.character(results_D_SP_clique$node[i])}
 }
 results_D_SP_clique<-cbind(select_node,results_D_SP_clique)
-colnames(results_D_SP_clique)[colnames(results_D_SP_clique)== "node"]<-"node_clique_SP"
+results_D_SP_clique<-results_D_SP_clique[,-which(colnames(results_D_SP_clique)== "node")]
 
 ###D_RW
 select_node<-rep('',nrow(results_D_RW_clique))
@@ -458,7 +459,7 @@ for( i in 1:nrow(results_D_RW_clique)){
   if(substr(x =node,1,6)=="clique"){
     
     proteins_clique<-clustered_protein[clustered_protein$clique_bigger==substr(x = node,7,1000),"node"]
-    results_proteins_clique<-results[results$node%in%proteins_clique,]
+    results_proteins_clique<-results_PPI[results_PPI$node%in%proteins_clique,]
     
     select_node[i]<-as.character(results_proteins_clique$node[which.min(results_proteins_clique$D_RW)[1]])
     
@@ -466,7 +467,7 @@ for( i in 1:nrow(results_D_RW_clique)){
   else{select_node[i]<-as.character(results_D_RW_clique$node[i])}
 }
 results_D_RW_clique<-cbind(select_node,results_D_RW_clique)
-colnames(results_D_RW_clique)[colnames(results_D_RW_clique)== "node"]<-"node_clique_SP"
+results_D_RW_clique<-results_D_RW_clique[,-which(colnames(results_D_RW_clique)== "node")]
 
 ###RP_RW
 select_node<-rep('',nrow(results_SP_RW_clique))
@@ -475,7 +476,7 @@ for( i in 1:nrow(results_SP_RW_clique)){
   if(substr(x =node,1,6)=="clique"){
     
     proteins_clique<-clustered_protein[clustered_protein$clique_bigger==substr(x = node,7,1000),"node"]
-    results_proteins_clique<-results[results$node%in%proteins_clique,]
+    results_proteins_clique<-results_PPI[results_PPI$node%in%proteins_clique,]
     
     select_node[i]<-as.character(results_proteins_clique$node[which.min(results_proteins_clique$SP_RW)[1]])
     
@@ -483,39 +484,48 @@ for( i in 1:nrow(results_SP_RW_clique)){
   else{select_node[i]<-as.character(results_SP_RW_clique$node[i])}
 }
 results_SP_RW_clique<-cbind(select_node,results_SP_RW_clique)
-colnames(results_SP_RW_clique)[colnames(results_SP_RW_clique)== "node"]<-"node_clique_SP"
+results_SP_RW_clique<-results_SP_RW_clique[,-which(colnames(results_SP_RW_clique)== "node")]
 
+#The main results are the different ranking on the network clique
+results<-merge(results_D_clique, results_SP_clique,by="select_node",all=T)
+results<-merge(results, results_RW_clique,by="select_node",all=T)
+results<-merge(results, results_D_SP_clique,by="select_node",all=T)
+results<-merge(results, results_D_RW_clique,by="select_node",all=T)
+results<-merge(results, results_SP_RW_clique,by="select_node",all=T)
 
+#The best results has been observed using the Shortest Path ranking combined with the Random walk ranking
+
+####Validation of results####
 
 #CTbase
-####Validation####
 
 #I validate this result with CTD base
+#'Polycystic Kidney, Autosomal Dominant' is the disease of interest
+# It can be replace by you own disease of interest
 main_disease <- query_ctd_dise( terms = c( 'Polycystic Kidney, Autosomal Dominant' ) )
-node<-main_disease@gene_interactions@listData$Gene.Symbol
-disease_genes<-rep(1,length(node))
+disease_genes<-main_disease@gene_interactions@listData$Gene.Symbol
 disease_genes_score<-main_disease@gene_interactions@listData$Inference.Score
 
-result_CTDbase<-data.frame(node,disease_genes,disease_genes_score,stringsAsFactors = F)
+result_CTDbase<-data.frame(disease_genes,disease_genes_score,stringsAsFactors = F)
 
-####Results
+####Precision curves
 results_D_clique<-results_D_clique[order(results_D_clique$rank_D),]
-binary_results_D<-as.numeric(as.character(results_D_clique$select_node)%in%result_CTDbase$node)
+binary_results_D<-as.numeric(as.character(results_D_clique$select_node)%in%result_CTDbase$disease_genes)
 
 results_SP_clique<-results_SP_clique[order(results_SP_clique$rank_SP),]
-binary_results_SP<-as.numeric(as.character(results_SP_clique$select_node)%in%result_CTDbase$node)
+binary_results_SP<-as.numeric(as.character(results_SP_clique$select_node)%in%result_CTDbase$disease_genes)
 
 results_RW_clique<-results_RW_clique[order(results_RW_clique$rank_RW),]
-binary_results_RW<-as.numeric(as.character(results_RW_clique$select_node)%in%result_CTDbase$node)
+binary_results_RW<-as.numeric(as.character(results_RW_clique$select_node)%in%result_CTDbase$disease_genes)
 
 results_D_SP_clique<-results_D_SP_clique[order(results_D_SP_clique$D_SP),]
-binary_results_D_SP<-as.numeric(as.character(results_D_SP_clique$select_node)%in%result_CTDbase$node)
+binary_results_D_SP<-as.numeric(as.character(results_D_SP_clique$select_node)%in%result_CTDbase$disease_genes)
 
 results_D_RW_clique<-results_D_RW_clique[order(results_D_RW_clique$D_RW),]
-binary_results_D_RW<-as.numeric(as.character(results_D_RW_clique$select_node)%in%result_CTDbase$node)
+binary_results_D_RW<-as.numeric(as.character(results_D_RW_clique$select_node)%in%result_CTDbase$disease_genes)
 
 results_SP_RW_clique<-results_SP_RW_clique[order(results_SP_RW_clique$SP_RW),]
-binary_results_SP_RW<-as.numeric(as.character(results_SP_RW_clique$select_node)%in%result_CTDbase$node)
+binary_results_SP_RW<-as.numeric(as.character(results_SP_RW_clique$select_node)%in%result_CTDbase$disease_genes)
 
 list_binary_results<-list("D"=binary_results_D,"SP"=binary_results_SP,
                           "RW"=binary_results_RW,"D+SP"=binary_results_D_SP,"D+RW"=binary_results_D_RW,
