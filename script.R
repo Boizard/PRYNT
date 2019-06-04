@@ -1,7 +1,7 @@
 ########
-#Script priorisations method
+#Script prioritization methods
 #######
-#This script describe a priorisation methods applied on a PPI network using a urinary proteomics profiles from renal diseases 
+#This script describe prioritization methods applied on a PPI network using a urinary proteomics profiles from renal diseases 
 #published  : 
 
 #I illustrate my workflow here with the example of urinary profile from ADPKD
@@ -14,7 +14,7 @@ library(zoo)
 library(CTDquerier)
 library(RandomWalkRestartMH)
 
-####Function####
+####Functions####
 
 shortest_path_ranking_function<-function(graph,seed,score=NULL,directed=T,distance_table=NULL){
   #calculate the closeness of each protein from seeds using the shortest path
@@ -166,12 +166,11 @@ network_actions <-read.table(file ="9606.protein.actions.v10.5.txt",header = T,s
 
 #annotation#
 #details of each proteins. datas obtain with string database available on github
-#adress : 
 #annotation_string permit to obtain  to convert Ensembl name to protein names.
 annotation<-read.table(file ="annotation_string2.txt",header = T,sep = "\t",stringsAsFactors = F,quote="" )
 annotation<-annotation[,1:2]
 
-#replace ensemble name by regular protein name
+#replace Ensembl names by regular protein names
 network_actions<-merge(x = network_actions, y = annotation,by.x="item_id_a",by.y="protein_external_id")
 network_actions<-network_actions[,-which(colnames(network_actions)=="item_id_a")]
 colnames(network_actions)[which(colnames(network_actions)=="preferred_name")]<-"item_id_a"
@@ -203,7 +202,7 @@ proteins_actions_directed_acting_900<-unique(c(network_actions_directed_acting_9
 head(network_actions_directed_acting_900)
 network<-network_actions_directed_acting_900
 
-####experimental data####
+####experimental datas####
 
 #list_DE_bakun2012 character vector of Differently Expressed proteins (DE) from Bankun et al. (2012) concerning ADPKD  available on github
 #adress : https://github.com/Boizard/Prioritization_urinary_proteome/
@@ -237,7 +236,7 @@ proteins_network<-names(V(graph))
 number_proteins_network<-length(proteins_network)
 DE_proteins_network<-DE_proteins[DE_proteins%in%proteins_network]
 
-####Clique calculation#######
+####Cliques calculation#######
 #I use max_clique from igraph package
 clique<-max_cliques(graph = graph,min=3)
 
@@ -248,7 +247,7 @@ for( i in 1:length(clique)){
   clique_matrix[i,2]<-paste(names(clique[[i]]),sep= "",collapse = " / ")
   
 }
-#clique_matrix is a matrix, each line is a clique, and the seconde colum is a list of proteins is the clique
+#clique_matrix is a matrix, each line is a clique, and the second colum is the list of proteins is the clique
 
 #I selection only the bigger clique for each protein
 clique_max<-rep(0,length(V(graph)))
@@ -280,7 +279,7 @@ clique_data<-clique_bigger$clique_bigger
 
 
 #I put one condition clique have to be bigger than 2
-#I accept that the "clique" is a grouping of several clique
+#I accept that the "clique" is a group of several clique
 clique_size<-table(clique_data)
 clique_bigger_than_2<-(clique_data%in%names(clique_size[clique_size>2]))
 
@@ -298,7 +297,7 @@ for( i in 1:length(clustered_clique)){
   
 }
 
-#A lot of relation are now redundant
+#A lot of relations are now redundant
 #remove redundant relations
 network_clique<-unique(network_clique)
 #remove self-loops
@@ -312,7 +311,7 @@ protein_network_clique<-names(V(graph_clique))
 number_protein_network_clique<-length(protein_network_clique)
 
 #Selection of the DE proteins in network_clique
-#I consider a clique as DE if one protein is DE in the clique
+#I consider a clique as DE if at least one protein is DE in the clique
 DE_proteins_network_clique<-DE_proteins
 
 for( i in 1:length(DE_proteins_network_clique)){
@@ -340,7 +339,7 @@ head(results_D)
 
 
 
-
+#Complete results on the PPI network
 results_PPI<-merge(results_SP,results_RW,by = "node")
 results_PPI<-merge(results_PPI,results_D,by = "node")
 results_PPI<-merge(clustered_protein,results_PPI,by = "node",all.y =T )
@@ -352,7 +351,7 @@ SP_RW<-results_PPI$rank_SP*results_PPI$rank_RW
 results_PPI<-data.frame(results_PPI,D_SP,D_RW,SP_RW)
 
 
-####Calculation of priorisation measure in the network with clique####
+####Calculation of priorisation measures in the network with clique####
 results_SP_clique<-shortest_path_ranking_function(graph = graph_clique,seed = DE_proteins_network_clique)
 results_SP_clique<-data.frame(results_SP_clique,"rank_SP"=rank(-results_SP_clique$SP))
 
@@ -371,8 +370,6 @@ head(results_RW_clique)
 head(results_D_clique)
 
 #Combined scores
-
-
 D_SP<-results_D_clique$rank_D*results_SP_clique$rank_SP
 D_RW<-results_D_clique$rank_D*results_RW_clique$rank_RW
 SP_RW<-results_SP_clique$rank_SP*results_RW_clique$rank_RW
@@ -381,7 +378,7 @@ results_D_SP_clique<-data.frame("node"=results_D_clique$node,D_SP)
 results_D_RW_clique<-data.frame("node"=results_D_clique$node,D_RW)
 results_SP_RW_clique<-data.frame("node"=results_D_clique$node,SP_RW)
 
-####selection of the best node for clique for each measure###
+####selection of  best nodes for clique for each measure###
 
 ###D
 select_node<-rep('',nrow(results_D_clique))
@@ -486,7 +483,7 @@ for( i in 1:nrow(results_SP_RW_clique)){
 results_SP_RW_clique<-cbind(select_node,results_SP_RW_clique)
 results_SP_RW_clique<-results_SP_RW_clique[,-which(colnames(results_SP_RW_clique)== "node")]
 
-#The main results are the different ranking on the network clique
+#The main result are the different ranking on the network clique
 results<-merge(results_D_clique, results_SP_clique,by="select_node",all=T)
 results<-merge(results, results_RW_clique,by="select_node",all=T)
 results<-merge(results, results_D_SP_clique,by="select_node",all=T)
