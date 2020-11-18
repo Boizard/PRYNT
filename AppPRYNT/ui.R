@@ -14,7 +14,7 @@ ui <- fluidPage(
           fluidRow(
             column(2),
             column(6,
-              textAreaInput("caption", "List of deregulated proteins (one of each line)", "", width = "600px",height = "200px"),
+              textAreaInput("caption", "List of deregulated proteins (one per line)", "", width = "600px",height = "200px"),
               fluidRow(
                 column(2,"Not found : "),
                 column(6,
