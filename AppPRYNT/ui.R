@@ -1,8 +1,9 @@
 ui <- fluidPage(
   
   # App title ----
-  titlePanel("PRYNT Application"),
-  mainPanel(hr(),"en 2 phrases",br(),br(),br() ),
+  mainPanel(h1("Application PRYNT"),h5("PRioritization bY protein NeTwork")),
+  mainPanel(hr(),
+            h4("Prioritize disease candidates from urinary protein profile"),br(),br() ),
   # Sidebar layout with input and output definitions ----
   sidebarLayout(
     
@@ -15,7 +16,7 @@ ui <- fluidPage(
             column(6,
               textAreaInput("caption", "List of deregulated proteins (one of each line)", "", width = "600px",height = "200px"),
               fluidRow(
-                column(3,"Not found : "),
+                column(2,"Not found : "),
                 column(6,
                 verbatimTextOutput("value"),tags$head(tags$style("#value{color: red;font-size: 20px;font-style: bold;}")),
                 )
@@ -35,8 +36,13 @@ ui <- fluidPage(
     
     # Main panel for displaying outputs ----
     mainPanel(
-      conditionalPanel(condition ="input.confirmdatabutton!=0" ,
-                 withSpinner(ui_element =dataTableOutput('table') ,color="#0dc5c1",type = 8,)
+      p(conditionalPanel(condition ="input.confirmdatabutton!=0" ,
+            h2("Results"),
+            # withSpinner(ui_element = 
+            dataTableOutput('table') %>% withSpinner(color="#0dc5c1",type = 8)
+            # ,color="#0dc5c1",type = 8,))
+      ,align="center")
+                 
 
                         )
       # dataTableOutput("table")
