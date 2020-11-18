@@ -1,10 +1,15 @@
-#######Packages#######
 ####Packages####
-library(igraph)
-library(zoo)
-library(RandomWalkRestartMH)
-library(STRINGdb)
-library(shinycssloaders)
+usePackage <- function(p) 
+{
+  if (!is.element(p, installed.packages()[,1]))
+    install.packages(p, dep = TRUE)
+  require(p, character.only = TRUE)
+}
+usePackage("igraph")
+usePackage("zoo")
+usePackage("RandomWalkRestartMH")
+usePackage("STRINGdb")
+usePackage("shinycssloaders")
 
 
 #######Functions#######
@@ -73,7 +78,7 @@ random_walk_ranking_function<-function(graph,seed,adjacency_matrix=NULL,multiple
 
 ########download the PPI network#####
 ###from string package
-print("loading of string Database")
+print("loading String Database")
 string_db <<- STRINGdb$new(version="11", species=9606,
                           score_threshold=0, input_directory="" )
 
