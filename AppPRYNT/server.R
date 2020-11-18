@@ -9,7 +9,7 @@ server <- function(input, output) {
   
   # output$testtabparameters<- reactive({
   INPUT<- reactive({     DP_input<<- input$caption
-  print("text")
+  print("input")
   DP_input<-strsplit(DP_input, "\n", fixed=FALSE)[[1]]
   DP_not_string<-DP_input[!DP_input%in%annotation$preferred_name]
   DP_not_string
@@ -20,11 +20,10 @@ server <- function(input, output) {
   RESULTS<-eventReactive(input$confirmdatabutton,{
     DP_input<<- input$caption
     DP_input<-strsplit(DP_input, "\n", fixed=FALSE)[[1]]
-   print(DP_input)
 
     ########download the PPI network#####
     ###from string package
-   print("network")
+    print("network selection")
     string_db <- STRINGdb$new(version="11", species=9606,
                               score_threshold=0, input_directory="" )
     
@@ -55,7 +54,7 @@ server <- function(input, output) {
     
     ####Cliques calculation#######
     #I use max_clique from igraph package
-    print("clique")
+    print("calculation of cliques")
   
     graph<-graph_from_data_frame(context_network) # network is transform as an igraph object
     clique<-max_cliques(graph = graph,min=3)
@@ -196,24 +195,26 @@ server <- function(input, output) {
     results_SP_RW_clique<-results_SP_RW_clique[,-which(colnames(results_SP_RW_clique)== "node")]
     
     ####The main result are the different ranking on the network clique#####
-    print("fini")
+    print("done")
     
 
     final<-merge(x = annotation[,1:2],y= results_SP_RW_clique,by.x="protein_external_id",by.y="select_node")
-    final<<-final[order(final$SP_RW),2:3]
+    final<-final[order(final$SP_RW),2:3]
     rownames(final)<-1:nrow(final)
+    final<-data.frame("rank"=1:nrow(final),final)
+    colnames(final)<-c("rank","Gene symbol","score")
     print(final[1:10,])
-    list(PRYNT=final)
+    
+    list("PRYNT"=final)
    
     
   })
   
-  output$table =renderDataTable( {RESULTS()$PRYNT }
-                             #     ,
-                             # options = list(    "orderClasses" = F,
-                             #                    "responsive" = F,
-                             #                    "pageLength" = 100)
-                             )
+  output$table =renderDataTable( {RESULTS()$PRYNT }, options = list(    "orderClasses" = F,
+                                                                 "responsive" = F,
+                                                                 "pageLength" = 10,
+                                                                 "rownames"=TRUE,
+                                                                 "colnames"=TRUE))
   
   
   
