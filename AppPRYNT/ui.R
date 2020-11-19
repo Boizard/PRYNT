@@ -14,7 +14,7 @@ ui <- fluidPage(
           fluidRow(
             column(2),
             column(6,
-              textAreaInput("caption", "List of deregulated proteins (one per line)", "", width = "600px",height = "200px"),
+              textAreaInput("caption", "List of deregulated proteins (one of each line)", "", width = "600px",height = "200px"),
               fluidRow(
                 column(2,"Not found : "),
                 column(6,
@@ -39,12 +39,15 @@ ui <- fluidPage(
       p(conditionalPanel(condition ="input.confirmdatabutton!=0" ,
             h2("Results"),
             # withSpinner(ui_element = 
-            dataTableOutput('table') %>% withSpinner(color="#0dc5c1",type = 8)
-            # ,color="#0dc5c1",type = 8,))
-      ,align="center")
-                 
+            dataTableOutput('table') %>% withSpinner(color="#0dc5c1",type = 8),align="center"),
 
-                        )
+            # ,color="#0dc5c1",type = 8,))
+            p(conditionalPanel(condition ="input.confirmdatabutton!=0" ,
+                    downloadButton("downloadtable","Download"),align="center", width ='200px')
+            )
+            
+
+      )
       # dataTableOutput("table")
     )
   )
