@@ -23,7 +23,7 @@ usePackage_bioconductor("RandomWalkRestartMH")
 usePackage_bioconductor("STRINGdb") 
 #######Functions#######
 
-
+memory.limit(size =8078 )
 shortest_path_ranking_function<-function(graph,seed,score=NULL,directed=T,distance_table=NULL){
   #calculate the closeness of each protein from seeds using the shortest path
   #graph : igraph object, containing the network to analyse
