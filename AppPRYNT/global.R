@@ -7,11 +7,20 @@ usePackage <- function(p)
 }
 usePackage("igraph")
 usePackage("zoo")
-usePackage("RandomWalkRestartMH")
-usePackage("STRINGdb")
+
 usePackage("shinycssloaders")
 
 
+usePackage_bioconductor <- function(p) 
+{
+  if (!requireNamespace("BiocManager", quietly = TRUE)){install.packages("BiocManager")}
+  
+  if (!is.element(p, installed.packages()[,1])){BiocManager::install(pkgs = p,update = FALSE)}
+  require(p, character.only = TRUE)
+}
+
+usePackage_bioconductor("RandomWalkRestartMH")
+usePackage_bioconductor("STRINGdb") 
 #######Functions#######
 
 
@@ -72,7 +81,17 @@ random_walk_ranking_function<-function(graph,seed,adjacency_matrix=NULL,multiple
   return(results_random_walk)
 }
 
-
+downloaddataset<-function(x,file,cnames=T,rnames=T){
+  ext<-strsplit(x = file,split = "[.]")[[1]][2]
+  if(ext=="csv"){
+    if(sum(cnames,rnames)==2){write.csv(x,file)}
+    else{write.table(x,file,col.names = cnames,row.names = F,sep=";",dec=".")}
+  }
+  if(ext=="xlsx"){
+    write.xlsx(x,file,col.names = cnames,row.names =rnames )
+  }
+  
+}
 
 
 
