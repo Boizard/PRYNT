@@ -216,7 +216,10 @@ server <- function(input, output) {
                                                                  "rownames"=TRUE,
                                                                  "colnames"=TRUE))
   
-  
+  output$downloadtable <- downloadHandler(
+    filename = function() { paste('dataset', '.','csv', sep='') },
+    content = function(file) {
+      downloaddataset(   RESULTS()$PRYNT, file) })
   
   
 }
